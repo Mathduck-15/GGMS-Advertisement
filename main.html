@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GGMS – Barangay-to-municipal document processing</title>
+    <meta
+      name="description"
+      content="GGMS lets barangay staff submit residents' applications electronically, and everyone tracks status and records in real time."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Public+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #eef3f6;
+        --paper: #ffffff;
+        --ink: #12263a;
+        --muted: #52667a;
+        --teal: #0f7b6c;
+        --teal-dark: #0a5a4f;
+        --stamp: #b3322a;
+        --line: #cfdae2;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Public Sans", system-ui, sans-serif;
+        line-height: 1.6;
+        font-size: 17px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Bricolage Grotesque", "Public Sans", sans-serif;
+        line-height: 1.1;
+        margin: 0;
+      }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 0 22px;
+      }
+      header {
+        padding: 18px 0;
+      }
+      header .wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand {
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-weight: 800;
+        font-size: 1.25rem;
+        text-decoration: none;
+      }
+      .btn {
+        display: inline-block;
+        background: var(--teal);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 13px 22px;
+        border-radius: 6px;
+        border: 2px solid var(--teal);
+      }
+      .btn:hover {
+        background: var(--teal-dark);
+        border-color: var(--teal-dark);
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--ink);
+        border-color: var(--ink);
+      }
+      .btn.ghost:hover {
+        background: var(--ink);
+        color: #fff;
+      }
+      a:focus-visible,
+      .btn:focus-visible {
+        outline: 3px solid var(--ink);
+        outline-offset: 3px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 48px;
+        align-items: center;
+        padding: 56px 0 72px;
+      }
+      .hero h1 {
+        font-size: clamp(2.4rem, 5.6vw, 4rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .hero p {
+        color: var(--muted);
+        font-size: 1.15rem;
+        max-width: 34em;
+        margin: 20px 0 28px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      /* tracking slip */
+      .slip {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 26px 26px 22px;
+        box-shadow: 0 18px 40px -22px rgba(18, 38, 58, 0.35);
+        position: relative;
+        transform: rotate(1.2deg);
+      }
+      .slip h3 {
+        font-size: 1.05rem;
+        color: var(--muted);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .slip .ref {
+        font-weight: 600;
+        margin-bottom: 18px;
+      }
+      .track {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .track li {
+        position: relative;
+        padding: 0 0 18px 34px;
+        font-size: 0.98rem;
+      }
+      .track li:before {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: 6px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--teal);
+      }
+      .track li:after {
+        content: "";
+        position: absolute;
+        left: 12px;
+        top: 22px;
+        width: 2px;
+        height: calc(100% - 18px);
+        background: var(--teal);
+      }
+      .track li:last-child:after {
+        display: none;
+      }
+      .track li small {
+        display: block;
+        color: var(--muted);
+      }
+      .track li.now:before {
+        background: #fff;
+        border: 3px solid var(--teal);
+      }
+      .track li.now:after {
+        background: var(--line);
+      }
+      .track li.todo:before {
+        background: var(--line);
+      }
+      .track li.todo:after {
+        background: var(--line);
+      }
+      .track li.todo {
+        color: var(--muted);
+      }
+      .stamp {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        border: 3px solid var(--stamp);
+        color: var(--stamp);
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-weight: 800;
+        padding: 2px 12px;
+        transform: rotate(-8deg);
+        opacity: 0.85;
+        font-size: 1.05rem;
+      }
+
+      section {
+        padding: 64px 0;
+        border-top: 1px solid var(--line);
+      }
+      section h2 {
+        font-size: clamp(1.8rem, 3.6vw, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        margin-bottom: 14px;
+        max-width: 18em;
+      }
+      .lead {
+        color: var(--muted);
+        max-width: 40em;
+        margin: 0 0 32px;
+      }
+
+      .pain {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+      }
+      .pain div {
+        border-left: 4px solid var(--stamp);
+        padding-left: 16px;
+      }
+      .pain h3 {
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+      }
+      .pain p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+        counter-reset: s;
+      }
+      .steps div {
+        counter-increment: s;
+        padding: 6px 26px 6px 0;
+      }
+      .steps div:before {
+        content: counter(s);
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 14px;
+      }
+      .steps h3 {
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+      }
+      .steps p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .features {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0 48px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .features li {
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .features strong {
+        display: block;
+        font-family: "Bricolage Grotesque", sans-serif;
+        font-size: 1.15rem;
+      }
+      .features span {
+        color: var(--muted);
+      }
+
+      .video {
+        background: var(--ink);
+        border-radius: 6px;
+        aspect-ratio: 16/9;
+        display: grid;
+        place-items: center;
+        color: #cfdae2;
+        text-align: center;
+        padding: 20px;
+      }
+      .video iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: 6px;
+      }
+
+      .cta {
+        background: var(--ink);
+        color: #fff;
+        border-top: 0;
+        margin-top: 24px;
+      }
+      .cta h2 {
+        color: #fff;
+      }
+      .cta .lead {
+        color: #b7c6d3;
+      }
+      .cta .btn {
+        background: #fff;
+        color: var(--ink);
+        border-color: #fff;
+      }
+      .cta .btn:hover {
+        background: #dbe6ee;
+        border-color: #dbe6ee;
+      }
+      .cta .btn.ghost {
+        background: transparent;
+        color: #fff;
+        border-color: #fff;
+      }
+      .cta .btn.ghost:hover {
+        background: #fff;
+        color: var(--ink);
+      }
+      .cta a:focus-visible {
+        outline-color: #fff;
+      }
+      .contact {
+        margin-top: 26px;
+        color: #b7c6d3;
+        font-size: 0.98rem;
+      }
+      footer {
+        padding: 22px 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 820px) {
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 36px;
+          padding: 32px 0 48px;
+        }
+        .slip {
+          transform: none;
+        }
+        .pain,
+        .steps,
+        .features {
+          grid-template-columns: 1fr;
+        }
+        .steps div {
+          padding-bottom: 22px;
+        }
+        .features {
+          gap: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <a class="brand" href="#top">GGMS</a>
+        <a class="btn" href="#demo">Request a demo</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <div class="wrap hero">
+        <div>
+          <h1>Know where every application is.</h1>
+          <p>
+            GGMS is the Good Governance Management System. Barangay staff submit
+            residents' applications and documents electronically, municipal
+            offices review them online, and everyone tracks the status in real
+            time.
+          </p>
+          <div class="actions">
+            <a class="btn" href="#demo">Request a demo</a>
+            <a class="btn ghost" href="#how">See how it works</a>
+          </div>
+        </div>
+        <div class="slip" aria-label="Example of an application tracker">
+          <h3>Application tracker</h3>
+          <div class="ref">Sample: Barangay certificate request</div>
+          <ol class="track">
+            <li>Submitted by barangay<small>Documents attached</small></li>
+            <li>
+              Received by municipal office<small
+                >Routed to the right department</small
+              >
+            </li>
+            <li class="now">
+              Under review<small>Status updates automatically</small>
+            </li>
+            <li class="todo">
+              Approved or rejected<small>Decision recorded</small>
+            </li>
+          </ol>
+          <div class="stamp">TRACKED</div>
+        </div>
+      </div>
+
+      <section>
+        <div class="wrap">
+          <h2>Paper requests get delayed, lost, and left without updates.</h2>
+          <p class="lead">
+            Today, applications travel on paper from barangay to municipal hall.
+            Staff and residents pay for it in time.
+          </p>
+          <div class="pain">
+            <div>
+              <h3>Slow</h3>
+              <p>
+                Every step waits on someone carrying documents to the next
+                office.
+              </p>
+            </div>
+            <div>
+              <h3>Hard to trace</h3>
+              <p>
+                When a resident asks where their application is, nobody can say
+                right away.
+              </p>
+            </div>
+            <div>
+              <h3>Easy to lose</h3>
+              <p>
+                Missing papers mean resubmitting, repeat trips, and lost trust
+                in the process.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how">
+        <div class="wrap">
+          <h2>From barangay desk to municipal decision in three steps.</h2>
+          <p class="lead">Staff keep using the computers they already have.</p>
+          <div class="steps">
+            <div>
+              <h3>Submit</h3>
+              <p>
+                Barangay staff log in, enter the resident's application, and
+                attach the required documents.
+              </p>
+            </div>
+            <div>
+              <h3>Review</h3>
+              <p>
+                The request goes to the right municipal office, where staff
+                approve or reject it online.
+              </p>
+            </div>
+            <div>
+              <h3>Track</h3>
+              <p>
+                Everyone sees the current status and a complete transaction
+                record.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <h2>What GGMS does</h2>
+          <p class="lead">
+            Clear tools built around the way barangays and municipal offices
+            already work together.
+          </p>
+          <ul class="features">
+            <li>
+              <strong>Role-based login</strong
+              ><span
+                >Barangay and municipal users see only what their role
+                needs.</span
+              >
+            </li>
+            <li>
+              <strong>Electronic submission</strong
+              ><span
+                >Applications and documents go in digitally, with no extra
+                trips.</span
+              >
+            </li>
+            <li>
+              <strong>Automatic routing</strong
+              ><span>Each request reaches the proper municipal office.</span>
+            </li>
+            <li>
+              <strong>Approve or reject</strong
+              ><span
+                >Reviewers record a clear decision on every application.</span
+              >
+            </li>
+            <li>
+              <strong>Real-time status</strong
+              ><span>Check progress any time without calling or visiting.</span>
+            </li>
+            <li>
+              <strong>Transaction records</strong
+              ><span
+                >Every step is logged for transparent, accountable
+                service.</span
+              >
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <h2>Watch the 60-second pitch</h2>
+          <p class="lead">See how GGMS fits into a barangay's daily work.</p>
+          <div class="video">
+            <!-- Replace this whole div's content with your video, e.g.:
+             <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen title="GGMS pitch video"></iframe> -->
+            <span>Pitch video coming soon</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta" id="demo">
+        <div class="wrap">
+          <h2>Bring faster, more transparent service to your community.</h2>
+          <p class="lead">
+            Book a short demo with your office and see GGMS using sample data.
+          </p>
+          <div class="actions">
+            <a class="btn ghost" href="https://www.facebook.com/bryanluy822"
+              >Message us on Facebook</a
+            >
+          </div>
+          <p class="contact">
+            Email: bryanluy822@gmail.com &nbsp;|&nbsp; Phone: 09959659066
+            &nbsp;|&nbsp; Davao del Sur State College, Digos City
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">© 2026 GGMS – Good Governance Management System</div>
+    </footer>
+  </body>
+</html>
